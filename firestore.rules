@@ -1,0 +1,97 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: machines
+    // Fields:
+    //   - name: string (required)
+    //   - model: string
+    //   - serialNumber: string
+    //   - location: string
+    //   - status: string (Working, Partially Working, Not Working, Intermittent Fault)
+    //   - lastInspectionDate: string (ISO)
+    //   - updatedAt: timestamp
+    //   - createdAt: timestamp
+    //
+    // Collection: machines/{machineId}/logs
+    // Fields:
+    //   - machineId: string
+    //   - inspectionDate: string
+    //   - preparedBy: string
+    //   - status: string
+    //   - failureDate: string
+    //   - downtimeDuration: string
+    //   - problem: string
+    //   - errorCode: string
+    //   - affectedSystem: string
+    //   - rootCause: string
+    //   - technicalFindings: string
+    //   - testsPerformed: string
+    //   - repairsAttempted: string
+    //   - result: string
+    //   - recommendedAction: string
+    //   - requiredPart: string
+    //   - partNumber: string
+    //   - supplier: string
+    //   - leadTime: string
+    //   - partCost: number
+    //   - shippingCost: number
+    //   - laborCost: number
+    //   - totalCost: number
+    //   - currency: string
+    //   - priority: string
+    //   - revenueLoss: number
+    //   - urgency: string
+    //   - finalRecommendation: string
+    //   - returnToOperationDate: string
+    //   - technicianName: string
+    //   - managerName: string
+    //   - approvalDate: string
+    //   - createdAt: timestamp
+    //
+    // ===============================================================
+
+    // Helper Functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+          (request.auth.token.email == "dino.maintenance2025@gmail.com" && request.auth.token.email_verified == true));
+    }
+
+    function isValidMachine(data) {
+      return data.keys().hasAll(['name', 'status']) &&
+             data.name is string && data.name.size() > 0 && data.name.size() < 100 &&
+             data.status in ['Working', 'Partially Working', 'Not Working', 'Intermittent Fault'];
+    }
+
+    function isValidLog(data) {
+      return data.keys().hasAll(['machineId', 'status', 'createdAt']) &&
+             data.machineId is string &&
+             data.status is string;
+    }
+
+    match /users/{userId} {
+      allow read: if request.auth.uid == userId || isAdmin();
+      allow write: if isAdmin();
+    }
+
+    match /machines/{machineId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAuthenticated() && isValidMachine(request.resource.data);
+      allow delete: if isAdmin();
+
+      match /logs/{logId} {
+        allow read: if isAuthenticated();
+        allow create: if isAuthenticated() && isValidLog(request.resource.data);
+        allow update, delete: if isAdmin();
+      }
+    }
+  }
+}
