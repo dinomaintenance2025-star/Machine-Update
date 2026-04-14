@@ -1,5 +1,5 @@
 <div align="center">
-<img alt="ME" src=src/WhatsApp Image 2026-04-14 at 6.56.39 AM.jpeg />
+<img alt="ME" src="src/WhatsApp Image 2026-04-14 at 6.56.39 AM.jpeg">
 </div>
 
 # Run and deploy your AI Studio app
