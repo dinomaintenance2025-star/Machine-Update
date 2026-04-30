@@ -1,6 +1,6 @@
 {
-  "name": "Dino Maintenance",
-  "description": "A comprehensive machine maintenance tracking system with real-time status updates and detailed inspection logs.",
+  "name": "Dino World Maintenance Portal",
+  "description": "A comprehensive machine maintenance tracking portal with real-time status updates, detailed inspection logs, activity auditing, and purchasing order management.",
   "requestFramePermissions": [],
   "majorCapabilities": []
 }

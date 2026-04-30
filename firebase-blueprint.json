@@ -56,6 +56,56 @@
         "createdAt": { "type": "string", "format": "date-time" }
       },
       "required": ["machineId", "status", "createdAt"]
+    },
+    "User": {
+      "title": "User",
+      "description": "Custom user account for the maintenance portal.",
+      "type": "object",
+      "properties": {
+        "username": { "type": "string" },
+        "password": { "type": "string" },
+        "displayName": { "type": "string" },
+        "role": { "type": "string", "enum": ["admin", "technician", "manager", "viewer"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["username", "role"]
+    },
+    "Contact": {
+      "title": "Contact",
+      "description": "Supplier or store contact information.",
+      "type": "object",
+      "properties": {
+        "storeName": { "type": "string" },
+        "contactPerson": { "type": "string" },
+        "email": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["storeName", "email"]
+    },
+    "PurchasingOrder": {
+      "title": "Purchasing Order",
+      "description": "Order for machine parts.",
+      "type": "object",
+      "properties": {
+        "manufacturer": { "type": "string" },
+        "partNumber": { "type": "string" },
+        "price": { "type": "number" },
+        "status": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["manufacturer", "status"]
+    },
+    "PortalActivity": {
+      "title": "Portal Activity",
+      "description": "Log of actions performed in the portal.",
+      "type": "object",
+      "properties": {
+        "userEmail": { "type": "string" },
+        "action": { "type": "string" },
+        "details": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userEmail", "action", "createdAt"]
     }
   },
   "firestore": {
@@ -66,6 +116,22 @@
     "/machines/{machineId}/logs": {
       "schema": "MaintenanceLog",
       "description": "Maintenance logs for a specific machine."
+    },
+    "/users": {
+      "schema": "User",
+      "description": "Collection of custom user accounts."
+    },
+    "/contacts": {
+      "schema": "Contact",
+      "description": "Collection of contacts."
+    },
+    "/orders": {
+      "schema": "PurchasingOrder",
+      "description": "Collection of purchasing orders."
+    },
+    "/activities": {
+      "schema": "PortalActivity",
+      "description": "Global activity logs."
     }
   }
 }

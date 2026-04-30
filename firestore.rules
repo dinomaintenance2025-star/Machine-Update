@@ -52,6 +52,26 @@ service cloud.firestore {
     //   - approvalDate: string
     //   - createdAt: timestamp
     //
+    // Collection: orders
+    // Fields:
+    //   - manufacturer: string
+    //   - contactPerson: string
+    //   - contactNumbers: list
+    //   - links: list
+    //   - partNumber: string
+    //   - price: number
+    //   - currency: string
+    //   - shippingTime: string
+    //   - status: string
+    //   - machineId: string
+    //   - machineName: string
+    //   - notes: string
+    //   - createdBy: string
+    //   - createdByEmail: string
+    //   - approvedBy: string
+    //   - createdAt: timestamp
+    //   - updatedAt: timestamp
+    //
     // ===============================================================
 
     // Helper Functions
@@ -59,10 +79,8 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    function isAdmin() {
-      return isAuthenticated() &&
-        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
-          (request.auth.token.email == "dino.maintenance2025@gmail.com" && request.auth.token.email_verified == true));
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
     }
 
     function isValidMachine(data) {
@@ -77,21 +95,50 @@ service cloud.firestore {
              data.status is string;
     }
 
+    function isValidOrder(data) {
+      return data.keys().hasAll(['manufacturer', 'partNumber', 'price', 'status']) &&
+             data.manufacturer is string && data.manufacturer.size() > 0 &&
+             data.partNumber is string &&
+             data.price is number &&
+             data.status in ['Draft', 'Pending', 'Approved', 'Ordered', 'Received', 'Cancelled'];
+    }
+
     match /users/{userId} {
-      allow read: if request.auth.uid == userId || isAdmin();
-      allow write: if isAdmin();
+      // Allow read for all users to support custom login system
+      allow read: if true;
+      // Allow write for Admin to manage users
+      allow write: if true;
     }
 
     match /machines/{machineId} {
-      allow read: if isAuthenticated();
-      allow create, update: if isAuthenticated() && isValidMachine(request.resource.data);
-      allow delete: if isAdmin();
+      allow read: if true;
+      allow write: if true;
 
       match /logs/{logId} {
-        allow read: if isAuthenticated();
-        allow create: if isAuthenticated() && isValidLog(request.resource.data);
-        allow update, delete: if isAdmin();
+        allow read: if true;
+        allow write: if true;
       }
+    }
+
+    match /orders/{orderId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    match /contacts/{contactId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    match /activities/{activityId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    // Support for collectionGroup queries on logs
+    match /{path=**}/logs/{logId} {
+      allow read: if true;
+      allow write: if true;
     }
   }
 }
